@@ -14,7 +14,7 @@ if (!dbUrl) {
 
 if (dbUrl.startsWith("postgres://") || dbUrl.startsWith("postgresql://")) {
   console.log("Postgres DATABASE_URL detected — pushing schema and seeding database...");
-  execSync("npx prisma db push --accept-data-loss", { stdio: "inherit" });
+  execSync("npx prisma db push", { stdio: "inherit" });
   execSync("npm run db:seed", { stdio: "inherit" });
 } else {
   console.log("Skipping prisma db push during build (no postgresql:// DATABASE_URL configured yet).");
