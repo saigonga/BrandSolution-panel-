@@ -24,11 +24,14 @@ export async function getUser(): Promise<CurrentUser | null> {
   const email = session?.user?.email;
   const member = findMember(email) ?? (!REQUIRE_LOGIN ? TEAM[0] : undefined);
   if (!member) return null;
-  const row = await prisma.user.upsert({
-    where: { email: member.email },
-    update: {},
-    create: { email: member.email, name: member.name, role: member.role, image: session?.user?.image ?? null },
-  });
+  // Read first: a write on every request is the slow path.
+  const row =
+    (await prisma.user.findUnique({ where: { email: member.email } })) ??
+    (await prisma.user.upsert({
+      where: { email: member.email },
+      update: {},
+      create: { email: member.email, name: member.name, role: member.role, image: session?.user?.image ?? null },
+    }));
   return {
     id: row.id,
     email: row.email,

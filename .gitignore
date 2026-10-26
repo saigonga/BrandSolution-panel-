@@ -13,3 +13,6 @@ next-env.d.ts
 .serena/
 tsconfig.tsbuildinfo
 .vercel
+
+.vercel
+.env*
