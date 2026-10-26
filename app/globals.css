@@ -54,7 +54,7 @@ button { font: inherit; }
   border-right: 1px solid var(--line);
 }
 .brand { display: flex; align-items: center; gap: 9px; padding: 4px 8px 16px; }
-.brand .mk { width: 26px; height: 26px; border-radius: 7px; background: linear-gradient(135deg, var(--brand), var(--brand-2)); flex: none; }
+.brand .mk { width: 28px; height: 28px; border-radius: 7px; background: url(/tbm-mark.svg) center / cover no-repeat; flex: none; }
 .brand b { font-family: var(--font-display); font-weight: 800; font-size: 15px; letter-spacing: .2px; }
 .brand span { display: block; font-size: 10px; color: #8d8d99; font-weight: 500; letter-spacing: .4px; text-transform: uppercase; }
 .rail .grp { font-size: 10px; letter-spacing: .9px; text-transform: uppercase; color: #6c6c78; font-weight: 700; padding: 14px 10px 6px; }
