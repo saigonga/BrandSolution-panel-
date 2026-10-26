@@ -29,6 +29,12 @@ export const TEAM: TeamMember[] = [
     role: "MANAGER",
   },
   {
+    email: "saigonga34@gmail.com",
+    name: "Owner",
+    title: "Owner",
+    role: "MANAGER",
+  },
+  {
     email: "divya.yadavar@theboredmonkey.com",
     name: "Divya Yadavar",
     title: "Sr. Brand Solutions Manager",
