@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      String   @default("EMPLOYEE") // MANAGER | EMPLOYEE
+  image     String?
+  createdAt DateTime @default(now())
+
+  projects        Project[]       @relation("ProjectOwner")
+  updates         ProjectUpdate[] @relation("UpdateAuthor")
+  closures        Closure[]       @relation("ClosureOwner")
+  backfills       BackfillRequest[]
+}
+
+model Client {
+  id               String    @id @default(cuid())
+  brand            String    @unique
+  brandCategory    String
+  productCategories String   // JSON array of strings
+  createdAt        DateTime  @default(now())
+
+  projects Project[]
+  closures Closure[]
+}
+
+model Project {
+  id               String   @id @default(cuid())
+  name             String
+  workType         String   // CLIENT | INTERNAL
+  projectType      String
+  stage            String   @default("Not started")
+  nextStep         String?
+  startDate        DateTime @default(now())
+  deadline         DateTime?
+  reviewTo         String?
+  reviewOn         DateTime?
+  parkedReason     String?
+  internalCategory String?
+  productCategory  String?
+
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id])
+
+  ownerId String
+  owner   User   @relation("ProjectOwner", fields: [ownerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  updates ProjectUpdate[]
+}
+
+model ProjectUpdate {
+  id        String   @id @default(cuid())
+  type      String   // NOTE | STAGE | CREATE
+  body      String?
+  fromStage String?
+  toStage   String?
+  createdAt DateTime @default(now())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation("UpdateAuthor", fields: [authorId], references: [id])
+}
+
+model Closure {
+  id              String   @id @default(cuid())
+  date            DateTime @default(now())
+  isZero          Boolean  @default(false)
+  description     String?
+  productCategory String?
+  closedAmount    Int      @default(0)
+  agencyFee       Int      @default(0)
+  directExpense   Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  ownerId String
+  owner   User   @relation("ClosureOwner", fields: [ownerId], references: [id])
+
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id])
+}
+
+model BackfillRequest {
+  id         String    @id @default(cuid())
+  date       DateTime  // IST midnight of the day being backfilled
+  reason     String
+  status     String    @default("PENDING") // PENDING | APPROVED | DENIED
+  decidedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  requesterId String
+  requester   User   @relation(fields: [requesterId], references: [id])
+}
