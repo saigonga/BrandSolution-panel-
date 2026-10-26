@@ -1,0 +1,13 @@
+node_modules
+.next
+out
+.env
+.env.*
+.env.local
+*.db
+*.db-journal
+**/dev.db
+**/dev.db-journal
+.DS_Store
+__MACOSX
+next-env.d.ts

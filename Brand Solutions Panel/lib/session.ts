@@ -15,7 +15,7 @@ export interface CurrentUser {
   joinedKey: string;
 }
 
-const REQUIRE_LOGIN = false;
+const REQUIRE_LOGIN = true;
 
 // The roster in config/team.ts is the source of truth for who can get in
 // and what role they hold. The DB row supplies the stable id.
