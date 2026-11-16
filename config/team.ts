@@ -12,7 +12,9 @@
 // To add a new joiner: add a line here, then run  npm run db:seed
 // ---------------------------------------------------------------------------
 
-import { TEAMS, type TeamId } from "@/config/teams";
+// Relative on purpose: prisma/seed.ts loads this file with ts-node, which
+// does not understand the "@/" alias.
+import { TEAMS, type TeamId } from "./teams";
 
 export type Role = "MANAGER" | "EMPLOYEE";
 
