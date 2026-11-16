@@ -2,7 +2,8 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { findMember, TEAM, type Role } from "@/config/team";
+import { findMember, teamsFor, TEAM, type Role } from "@/config/team";
+import { teamDef, type TeamId } from "@/config/teams";
 import { dayKey } from "@/lib/time";
 
 export interface CurrentUser {
@@ -11,6 +12,7 @@ export interface CurrentUser {
   name: string;
   title: string;
   role: Role;
+  teams: TeamId[];
   image: string | null;
   joinedKey: string;
 }
@@ -38,6 +40,7 @@ export async function getUser(): Promise<CurrentUser | null> {
     name: member.name,
     title: member.title,
     role: member.role,
+    teams: teamsFor(member),
     image: row.image,
     joinedKey: dayKey(row.createdAt),
   };
@@ -55,6 +58,17 @@ export async function requireUser(): Promise<CurrentUser> {
   const u = await getUser();
   if (!u) throw new HttpError(401, "Sign in to continue.");
   return u;
+}
+
+// Closures, clients and backfills belong to teams that track money.
+export async function requireMoneyUser(): Promise<CurrentUser> {
+  const u = await requireUser();
+  if (!u.teams.some((t) => teamDef(t).money)) throw new HttpError(403, "Your team does not use this.");
+  return u;
+}
+
+export function requireTeamAccess(u: CurrentUser, team: string) {
+  if (!u.teams.includes(team as TeamId)) throw new HttpError(403, "That project belongs to a team you are not on.");
 }
 
 export async function requireManager(): Promise<CurrentUser> {

@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { handle, HttpError, readJson, requireUser } from "@/lib/session";
+import { handle, HttpError, readJson, requireMoneyUser } from "@/lib/session";
 import { cleanCats, str } from "@/lib/validate";
 import { parseCats } from "@/lib/dto";
 
 // Team members can add product categories to a brand.
 // Only the manager can rename a brand, change its category, or remove a product category.
 export const PATCH = handle(async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
-  const me = await requireUser();
+  const me = await requireMoneyUser();
   const client = await prisma.client.findUnique({ where: { id: (await ctx.params).id } });
   if (!client) throw new HttpError(404, "That client no longer exists.");
 

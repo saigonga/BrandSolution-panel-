@@ -63,12 +63,12 @@ export async function buildDaily(now: Date = new Date()) {
   const dayDate = dayStart(day);
 
   const [team, closures, month, moves, filled, projects, backfills] = await Promise.all([
-    getTeam(),
+    getTeam("BRAND_SOLUTIONS"),
     closuresOn(day),
     totalsByOwner(monthStartKey(dayDate), today),
     movementsBetween(day, today),
     filledBetween(day, today),
-    visibleProjects(now),
+    visibleProjects(now, "BRAND_SOLUTIONS"),
     pendingBackfills(),
   ]);
 
@@ -143,11 +143,11 @@ export async function buildWeekly(now: Date = new Date()) {
   const prevFrom = addDays(today, -14);
 
   const [team, week, prev, closures, projects, moves, filled] = await Promise.all([
-    getTeam(),
+    getTeam("BRAND_SOLUTIONS"),
     totalsByOwner(from, today),
     totalsByOwner(prevFrom, from),
     closuresBetween(from, today),
-    visibleProjects(now),
+    visibleProjects(now, "BRAND_SOLUTIONS"),
     movementsBetween(from, today),
     filledBetween(from, today),
   ]);

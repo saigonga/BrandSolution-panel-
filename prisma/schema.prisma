@@ -47,6 +47,7 @@ model Project {
   parkedReason     String?
   internalCategory String?
   productCategory  String?
+  team             String   @default("BRAND_SOLUTIONS") // see config/teams.ts
 
   clientId String?
   client   Client? @relation(fields: [clientId], references: [id])
@@ -58,6 +59,8 @@ model Project {
   updatedAt DateTime @updatedAt
 
   updates ProjectUpdate[]
+
+  @@index([team])
 }
 
 model ProjectUpdate {

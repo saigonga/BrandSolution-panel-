@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { handle, HttpError, readJson, requireUser } from "@/lib/session";
+import { handle, HttpError, readJson, requireMoneyUser } from "@/lib/session";
 import { str } from "@/lib/validate";
 import { addDays, dayKey, dayStart, fmtShort, isValidKey } from "@/lib/time";
 import { BACKFILL_MAX_DAYS } from "@/config/settings";
 
 // Ask the manager to reopen a past, locked day.
 export const POST = handle(async (req: Request) => {
-  const me = await requireUser();
+  const me = await requireMoneyUser();
   const b = await readJson(req);
 
   if (!isValidKey(b.date)) throw new HttpError(400, "Pick the day you missed.");

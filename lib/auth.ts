@@ -1,7 +1,13 @@
 import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import { findMember } from "@/config/team";
+
+// Local-only test login. Needs BOTH a dev server and DEV_LOGIN=true, so it can
+// never switch on in a production build.
+export const DEV_LOGIN_ENABLED =
+  process.env.NODE_ENV === "development" && process.env.DEV_LOGIN === "true";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -10,6 +16,19 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
       authorization: { params: { prompt: "select_account" } },
     }),
+    ...(DEV_LOGIN_ENABLED
+      ? [
+          CredentialsProvider({
+            id: "dev-login",
+            name: "Dev login",
+            credentials: { email: { label: "Email", type: "text" } },
+            async authorize(creds) {
+              const m = findMember(creds?.email);
+              return m ? { id: m.email, email: m.email, name: m.name } : null;
+            },
+          }),
+        ]
+      : []),
   ],
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   pages: { signIn: "/signin", error: "/signin" },

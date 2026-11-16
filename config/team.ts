@@ -12,6 +12,8 @@
 // To add a new joiner: add a line here, then run  npm run db:seed
 // ---------------------------------------------------------------------------
 
+import { TEAMS, type TeamId } from "@/config/teams";
+
 export type Role = "MANAGER" | "EMPLOYEE";
 
 export interface TeamMember {
@@ -19,6 +21,7 @@ export interface TeamMember {
   name: string;
   title: string;
   role: Role;
+  teams: TeamId[]; // managers can still open every team
 }
 
 export const TEAM: TeamMember[] = [
@@ -27,36 +30,63 @@ export const TEAM: TeamMember[] = [
     name: "Pratik Sadavarti",
     title: "CEO & Head of Brand Solutions",
     role: "MANAGER",
+    teams: ["BRAND_SOLUTIONS", "AI"],
   },
   {
     email: "saigonga34@gmail.com",
     name: "Owner",
     title: "Owner",
     role: "MANAGER",
+    teams: ["BRAND_SOLUTIONS", "AI"],
   },
   {
     email: "sai.gonga@theboredmonkey.com",
     name: "Sai Gonga",
     title: "Owner",
     role: "MANAGER",
+    teams: ["BRAND_SOLUTIONS", "AI"],
   },
   {
     email: "divya.yadavar@theboredmonkey.com",
     name: "Divya Yadavar",
     title: "Sr. Brand Solutions Manager",
     role: "EMPLOYEE",
+    teams: ["BRAND_SOLUTIONS"],
   },
   {
     email: "abhishek.bhat@theboredmonkey.com",
     name: "Abhishek Bhat",
     title: "Sr. Brand Solutions Executive",
     role: "EMPLOYEE",
+    teams: ["BRAND_SOLUTIONS"],
   },
   {
     email: "adarsh.jadhav@theboredmonkey.com",
     name: "Adarsh Jadhav",
     title: "Brand Solutions Executive",
     role: "EMPLOYEE",
+    teams: ["BRAND_SOLUTIONS"],
+  },
+  {
+    email: "haji.karim@theboredmonkey.com",
+    name: "Haji Karim",
+    title: "AI Team",
+    role: "EMPLOYEE",
+    teams: ["AI"],
+  },
+  {
+    email: "jiya.bhagat@theboredmonkey.com",
+    name: "Jiya Bhagat",
+    title: "AI Team",
+    role: "EMPLOYEE",
+    teams: ["AI"],
+  },
+  {
+    email: "sarvesh.yadav@theboredmonkey.com",
+    name: "Sarvesh Yadav",
+    title: "AI Team",
+    role: "EMPLOYEE",
+    teams: ["AI"],
   },
 ];
 
@@ -69,4 +99,9 @@ export function findMember(email?: string | null): TeamMember | undefined {
 export function teamOrder(email: string): number {
   const i = TEAM.findIndex((m) => m.email.toLowerCase() === email.toLowerCase());
   return i === -1 ? 999 : i;
+}
+
+// Teams this person can open. Managers see every team.
+export function teamsFor(m: TeamMember): TeamId[] {
+  return m.role === "MANAGER" ? TEAMS.map((t) => t.id) : m.teams;
 }

@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { handle, HttpError, readJson, requireUser } from "@/lib/session";
+import { handle, HttpError, readJson, requireMoneyUser } from "@/lib/session";
 import { cleanCats, str } from "@/lib/validate";
 import { parseCats } from "@/lib/dto";
 
 export const GET = handle(async () => {
-  await requireUser();
+  await requireMoneyUser();
   const rows = await prisma.client.findMany({ orderBy: { brand: "asc" } });
   return NextResponse.json({
     clients: rows.map((c) => ({
@@ -19,7 +19,7 @@ export const GET = handle(async () => {
 
 // Anyone on the team can add a brand they're working with or pitching.
 export const POST = handle(async (req: Request) => {
-  await requireUser();
+  await requireMoneyUser();
   const b = await readJson(req);
 
   const brand = str(b.brand, 80);

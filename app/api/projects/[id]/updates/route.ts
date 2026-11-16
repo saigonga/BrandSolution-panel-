@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { handle, HttpError, readJson, requireUser } from "@/lib/session";
+import { handle, HttpError, readJson, requireTeamAccess, requireUser } from "@/lib/session";
+import { teamDef } from "@/config/teams";
 import { checkStage, checkStageRules, dateKeyField, str } from "@/lib/validate";
 import { dayKey, fmtShort, isLocked } from "@/lib/time";
 
@@ -10,6 +11,7 @@ export const POST = handle(async (req: Request, ctx: { params: Promise<{ id: str
 
   const p = await prisma.project.findUnique({ where: { id: (await ctx.params).id } });
   if (!p) throw new HttpError(404, "That project no longer exists.");
+  requireTeamAccess(me, p.team);
   if (p.ownerId !== me.id && me.role !== "MANAGER") {
     throw new HttpError(403, "Only the owner or the manager can update this project.");
   }
@@ -23,7 +25,7 @@ export const POST = handle(async (req: Request, ctx: { params: Promise<{ id: str
   const reviewOn = stage === "Sent for review" && b.reviewOn !== undefined ? dateKeyField(b.reviewOn, "Review date", false) : p.reviewOn;
   const parkedReason = stage === "Parked" && b.parkedReason !== undefined ? str(b.parkedReason, 200) : p.parkedReason;
 
-  checkStageRules({ stage, nextStep, reviewTo, reviewOn, parkedReason });
+  if (!teamDef(p.team).simple) checkStageRules({ stage, nextStep, reviewTo, reviewOn, parkedReason });
 
   const stageChanged = stage !== p.stage;
   const nextChanged = (nextStep ?? "") !== (p.nextStep ?? "");

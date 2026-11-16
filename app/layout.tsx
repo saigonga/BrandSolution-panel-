@@ -2,8 +2,8 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
-  title: "Brand Solutions Panel · TBM",
-  description: "Daily project and revenue tracker for the TBM Brand Solutions team.",
+  title: "TBM Panel",
+  description: "Daily project tracker for the TBM teams.",
 };
 
 export const viewport: Viewport = {

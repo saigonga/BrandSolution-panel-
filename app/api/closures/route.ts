@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { handle, HttpError, readJson, requireUser } from "@/lib/session";
+import { handle, HttpError, readJson, requireMoneyUser } from "@/lib/session";
 import { amount, str } from "@/lib/validate";
 import { addDays, dayKey, dayStart } from "@/lib/time";
 import { parseCats } from "@/lib/dto";
@@ -8,7 +8,7 @@ import { backfillUsable, writableDays } from "@/lib/stats";
 
 // Log a closure for today (or for an approved backfill day), or mark 000.
 export const POST = handle(async (req: Request) => {
-  const me = await requireUser();
+  const me = await requireMoneyUser();
   const b = await readJson(req);
 
   const days = await writableDays(me.id);

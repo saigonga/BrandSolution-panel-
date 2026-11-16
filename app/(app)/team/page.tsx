@@ -7,23 +7,25 @@ import Topbar from "@/components/Topbar";
 import ProjectCard from "@/components/ProjectCard";
 import NewProjectButton from "@/components/NewProjectButton";
 import Avatar from "@/components/Avatar";
+import { getActiveTeam } from "@/lib/team";
 
 export const dynamic = "force-dynamic";
 
 export default async function TeamPage() {
   const me = await getUser();
   if (!me) redirect("/signin");
+  const active = await getActiveTeam(me);
 
   const now = new Date();
   const [team, projects, filledMap] = await Promise.all([
-    getTeam(),
-    visibleProjects(now),
+    getTeam(active.id),
+    visibleProjects(now, active.id),
     loadFilledMap(habitWindowStart(now)),
   ]);
 
   return (
     <>
-      <Topbar title="Team Board" sub="Everyone's live projects · click any card for its full history" />
+      <Topbar title={`Team Board · ${active.label}`} sub="Everyone's live projects · click any card for its full history" />
       <section className="view">
         <div className="pad">
           <div className="sec-h first">
@@ -33,7 +35,7 @@ export default async function TeamPage() {
           </div>
           <div className="callout">
             <span className="ic" style={{ color: "var(--info)" }}>●</span>
-            <div>Everyone sees everyone&apos;s work, the manager&apos;s included. Projects and stages are open to the whole team; closure numbers stay private to each person and the manager.</div>
+            <div>Everyone on {active.label} sees everyone&apos;s work, the manager&apos;s included. Projects and stages are open to the whole team{active.money ? "; closure numbers stay private to each person and the manager" : ""}.</div>
           </div>
 
           {team.map((m, i) => {
@@ -57,9 +59,11 @@ export default async function TeamPage() {
                   <div className="st">
                     <span className="badge">{open} open</span>
                     {stale > 0 && <span className="badge low">{stale} stale</span>}
-                    <span className={`badge ${fillGood ? "ok" : "low"}`}>{s.fillNum}/{s.fillDen} filled</span>
-                    <span className="badge">Streak {s.streak}</span>
-                    {s.filledToday ? <span className="badge ok">Filled today</span> : <span className="badge">Not filled today</span>}
+                    {active.money && (<>
+                      <span className={`badge ${fillGood ? "ok" : "low"}`}>{s.fillNum}/{s.fillDen} filled</span>
+                      <span className="badge">Streak {s.streak}</span>
+                      {s.filledToday ? <span className="badge ok">Filled today</span> : <span className="badge">Not filled today</span>}
+                    </>)}
                   </div>
                 </div>
                 {mine.length ? (

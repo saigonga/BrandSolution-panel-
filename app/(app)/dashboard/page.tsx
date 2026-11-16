@@ -81,11 +81,11 @@ export default async function DashboardPage() {
   const yesterday = addDays(today, -1);
 
   const [team, month, todayRows, yesterdayRows, projects, backfills, filledMap] = await Promise.all([
-    getTeam(),
+    getTeam("BRAND_SOLUTIONS"),
     monthTotals(now),
     closuresOn(today),
     closuresOn(yesterday),
-    visibleProjects(now),
+    visibleProjects(now, "BRAND_SOLUTIONS"),
     pendingBackfills(),
     loadFilledMap(habitWindowStart(now)),
   ]);

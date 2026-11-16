@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { TEAM, findMember, teamOrder } from "@/config/team";
+import { TEAM, findMember, teamOrder, teamsFor } from "@/config/team";
+import { TEAMS, type TeamId } from "@/config/teams";
 import { addDays, dayKey, dayStart, isWorkingDay, monthStartKey } from "@/lib/time";
 import { STAGES } from "@/lib/constants";
 import {
@@ -8,11 +9,12 @@ import {
 } from "@/lib/stats";
 import type { MemberDTO, ProjectDTO } from "@/lib/dto";
 
-export async function getTeam(): Promise<MemberDTO[]> {
+// People on one team. With no team given: everyone on the roster.
+export async function getTeam(teamId?: TeamId): Promise<MemberDTO[]> {
   const rows = await prisma.user.findMany();
   return rows
     .map((u) => ({ u, m: findMember(u.email) }))
-    .filter((x) => !!x.m)
+    .filter((x) => !!x.m && (!teamId || teamsFor(x.m).includes(teamId)))
     .sort((a, b) => teamOrder(a.u.email) - teamOrder(b.u.email))
     .map(({ u, m }) => ({ id: u.id, name: m!.name, title: m!.title, role: m!.role, image: u.image, joinedKey: dayKey(u.createdAt) }));
 }
@@ -77,9 +79,9 @@ export function workingKeys(fromKey: string, toKeyExclusive: string): string[] {
   return out;
 }
 
-export async function visibleProjects(now: Date = new Date()): Promise<ProjectDTO[]> {
+export async function visibleProjects(now: Date = new Date(), teamId?: TeamId): Promise<ProjectDTO[]> {
   const rows = await prisma.project.findMany({
-    where: visibleProjectsWhere(now),
+    where: { ...visibleProjectsWhere(now), ...(teamId ? { team: teamId } : {}) },
     include: projectInclude,
     orderBy: { updatedAt: "desc" },
   });
@@ -102,6 +104,7 @@ export async function movementsBetween(fromKey: string, toKeyExclusive: string) 
   return prisma.projectUpdate.findMany({
     where: {
       type: { in: ["STAGE", "CREATE"] },
+      project: { team: { in: MONEY_TEAM_IDS } },
       createdAt: { gte: dayStart(fromKey), lt: dayStart(toKeyExclusive) },
     },
     include: {
@@ -111,6 +114,9 @@ export async function movementsBetween(fromKey: string, toKeyExclusive: string) 
     orderBy: { createdAt: "asc" },
   });
 }
+
+// Ids of teams that track money (closures, fill rate). Digests cover these only.
+export const MONEY_TEAM_IDS: TeamId[] = TEAMS.filter((t) => t.money).map((t) => t.id);
 
 export function rosterEmails(role?: "MANAGER" | "EMPLOYEE"): string[] {
   return TEAM.filter((m) => !role || m.role === role).map((m) => m.email);

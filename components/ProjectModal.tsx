@@ -10,7 +10,8 @@ import { ACTIVE_STAGES, PROJECT_TYPES, STAGES } from "@/lib/constants";
 import { api, todayKeyIST } from "@/lib/api";
 
 export default function ProjectModal({ mode, onClose }: { mode: "self" | "assign"; onClose: () => void }) {
-  const { me, clients, team, isManager } = useShell();
+  const { me, clients, team, isManager, activeTeam } = useShell();
+  const simple = activeTeam.simple;
   const router = useRouter();
   useEscape(onClose);
 
@@ -49,6 +50,7 @@ export default function ProjectModal({ mode, onClose }: { mode: "self" | "assign
     try {
       await api("/api/projects", "POST", {
         name,
+        team: activeTeam.id,
         workType,
         clientId: workType === "CLIENT" ? clientId : undefined,
         productCategory: workType === "CLIENT" ? productCategory : undefined,
@@ -84,6 +86,7 @@ export default function ProjectModal({ mode, onClose }: { mode: "self" | "assign
             <input id="pm-name" autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Scapia · YouTube + IG GTM" maxLength={140} />
           </div>
 
+          {!simple && (
           <div className="ff">
             <label>Work type</label>
             <div className="seg">
@@ -91,9 +94,10 @@ export default function ProjectModal({ mode, onClose }: { mode: "self" | "assign
               <button type="button" className={workType === "INTERNAL" ? "on" : ""} onClick={() => setWorkType("INTERNAL")}>Internal</button>
             </div>
           </div>
+          )}
 
           <div className="fgrid">
-            {workType === "CLIENT" ? (
+            {simple ? null : workType === "CLIENT" ? (
               clients.length ? (
                 <>
                   <div className="ff">
@@ -126,12 +130,14 @@ export default function ProjectModal({ mode, onClose }: { mode: "self" | "assign
               </div>
             )}
 
+            {!simple && (
             <div className="ff">
               <label htmlFor="pm-type">Project type</label>
               <select id="pm-type" value={projectType} onChange={(e) => setProjectType(e.target.value)}>
                 {PROJECT_TYPES.map((t) => <option key={t}>{t}</option>)}
               </select>
             </div>
+            )}
 
             <div className="ff">
               <label htmlFor="pm-owner">Owner</label>
@@ -157,9 +163,9 @@ export default function ProjectModal({ mode, onClose }: { mode: "self" | "assign
           </div>
 
           <div className="ff">
-            <label htmlFor="pm-next">Next step {active && <span className="req">*</span>}</label>
+            <label htmlFor="pm-next">Next step {active && !simple && <span className="req">*</span>}</label>
             <input id="pm-next" value={nextStep} onChange={(e) => setNextStep(e.target.value)} placeholder="The single next move" maxLength={300} />
-            {active && <div className="hintline req">Required while a project is active.</div>}
+            {active && !simple && <div className="hintline req">Required while a project is active.</div>}
           </div>
 
           <div className="fgrid">
@@ -204,7 +210,7 @@ export default function ProjectModal({ mode, onClose }: { mode: "self" | "assign
         <div className="mfoot">
           {err && <div className="formerr">{err}</div>}
           <button type="button" className="btn ghost" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn pri" disabled={busy || (workType === "CLIENT" && !clients.length)}>
+          <button type="submit" className="btn pri" disabled={busy || (!simple && workType === "CLIENT" && !clients.length)}>
             {busy ? "Saving…" : assigning ? "Assign project" : "Create project"}
           </button>
         </div>
