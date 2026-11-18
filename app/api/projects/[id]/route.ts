@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { handle, HttpError, requireUser } from "@/lib/session";
+import { teamDef } from "@/config/teams";
 import { projectInclude, toProjectDTO, toUpdateDTO } from "@/lib/stats";
 import { isLocked } from "@/lib/time";
 
@@ -19,6 +20,7 @@ export const GET = handle(async (_req: Request, ctx: { params: Promise<{ id: str
     },
   });
   if (!p) throw new HttpError(404, "That project no longer exists.");
+  if (!me.money && teamDef(p.team).money) throw new HttpError(403, "That project is not on your team.");
 
   return NextResponse.json({
     project: toProjectDTO(p),

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { getTeam } from "@/lib/report";
+import { getTeamFor } from "@/lib/report";
 import { parseCats } from "@/lib/dto";
 import AppShell from "@/components/AppShell";
 import WorkspacePage from "@/app/(app)/workspace/page";
@@ -17,7 +17,7 @@ export default async function Home() {
 
   const [clientRows, team] = await Promise.all([
     me.money ? prisma.client.findMany({ orderBy: { brand: "asc" } }) : Promise.resolve([]),
-    getTeam(),
+    getTeamFor(me),
   ]);
 
   const clients = clientRows.map((c) => ({

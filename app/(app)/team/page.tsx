@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/session";
-import { getTeam, visibleProjects } from "@/lib/report";
+import { getTeamFor, visibleProjects } from "@/lib/report";
+import { TEAMS } from "@/config/teams";
 import { habitStats, habitWindowStart, loadFilledMap } from "@/lib/stats";
 import { isOpenStage, sortProjects } from "@/lib/constants";
 import Topbar from "@/components/Topbar";
@@ -16,8 +17,9 @@ export default async function TeamPage() {
 
   const now = new Date();
   const [team, projects, filledMap] = await Promise.all([
-    getTeam(),
-    visibleProjects(now),
+    getTeamFor(me),
+    // AI people see AI work only; Brand Solutions work (brands, clients) stays hidden from them.
+    visibleProjects(now, me.money ? undefined : TEAMS.find((t) => !t.money)!.id),
     loadFilledMap(habitWindowStart(now)),
   ]);
 
@@ -57,7 +59,7 @@ export default async function TeamPage() {
                   <div className="st">
                     <span className="badge">{open} open</span>
                     {stale > 0 && <span className="badge low">{stale} stale</span>}
-                    {m.money && (<>
+                    {m.money && me.money && (<>
                       <span className={`badge ${fillGood ? "ok" : "low"}`}>{s.fillNum}/{s.fillDen} filled</span>
                       <span className="badge">Streak {s.streak}</span>
                       {s.filledToday ? <span className="badge ok">Filled today</span> : <span className="badge">Not filled today</span>}

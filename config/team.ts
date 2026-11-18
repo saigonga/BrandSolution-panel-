@@ -14,7 +14,7 @@
 
 // Relative on purpose: prisma/seed.ts loads this file with ts-node, which
 // does not understand the "@/" alias.
-import { TEAMS, type TeamId } from "./teams";
+import { TEAMS, teamDef, type TeamId } from "./teams";
 
 export type Role = "MANAGER" | "EMPLOYEE";
 
@@ -99,4 +99,9 @@ export function teamOrder(email: string): number {
 // Teams this person can open. Managers see every team.
 export function teamsFor(m: TeamMember): TeamId[] {
   return m.role === "MANAGER" ? TEAMS.map((t) => t.id) : m.teams;
+}
+
+// True for people who log closures and see clients (Brand Solutions, and managers).
+export function hasMoney(m: TeamMember): boolean {
+  return teamsFor(m).some((t) => teamDef(t).money);
 }

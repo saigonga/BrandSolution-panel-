@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { findMember, teamsFor, TEAM, type Role } from "@/config/team";
+import { findMember, hasMoney, TEAM, type Role } from "@/config/team";
 import { teamDef } from "@/config/teams";
 import { dayKey } from "@/lib/time";
 
@@ -40,7 +40,7 @@ export async function getUser(): Promise<CurrentUser | null> {
     name: member.name,
     title: member.title,
     role: member.role,
-    money: teamsFor(member).some((t) => teamDef(t).money),
+    money: hasMoney(member),
     image: row.image,
     joinedKey: dayKey(row.createdAt),
   };

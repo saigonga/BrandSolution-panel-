@@ -6,7 +6,7 @@ import { checkProjectType, checkStage, checkStageRules, dateKeyField, str } from
 import { dayKey, dayStart, isLocked } from "@/lib/time";
 import { parseCats } from "@/lib/dto";
 import { projectInclude, toProjectDTO } from "@/lib/stats";
-import { findMember } from "@/config/team";
+import { findMember, hasMoney } from "@/config/team";
 
 export const POST = handle(async (req: Request) => {
   const me = await requireUser();
@@ -16,15 +16,16 @@ export const POST = handle(async (req: Request) => {
   const name = str(b.name, 140);
   if (!name) throw new HttpError(400, "Give the project a name.");
 
-  // Managers can assign to anyone on either team; everyone else adds their own.
+  // Managers assign to anyone. Brand Solutions people can assign to AI members. Everyone else adds their own.
   let ownerId = me.id;
   let ownerName = me.name;
   let ownerMember = findMember(me.email);
   if (b.ownerId && b.ownerId !== me.id) {
-    if (me.role !== "MANAGER") throw new HttpError(403, "Only a manager can assign projects to someone else.");
     const owner = await prisma.user.findUnique({ where: { id: String(b.ownerId) } });
     ownerMember = owner ? findMember(owner.email) : undefined;
     if (!owner || !ownerMember) throw new HttpError(400, "Pick someone from the team.");
+    const allowed = me.role === "MANAGER" || (me.money && !hasMoney(ownerMember));
+    if (!allowed) throw new HttpError(403, "You can only assign projects to AI team members.");
     ownerId = owner.id;
     ownerName = owner.name;
   }

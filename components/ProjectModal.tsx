@@ -14,8 +14,10 @@ export default function ProjectModal({ mode, onClose }: { mode: "self" | "assign
   const router = useRouter();
   useEscape(onClose);
 
-  const assigning = mode === "assign" && isManager;
-  const others = team.filter((m) => m.id !== me.id);
+  // Managers assign to anyone; Brand Solutions people assign to AI members only.
+  const assignees = isManager ? team : team.filter((m) => !m.money);
+  const others = assignees.filter((m) => m.id !== me.id);
+  const assigning = mode === "assign" && (isManager || me.money) && others.length > 0;
   const today = todayKeyIST();
 
   const [name, setName] = useState("");
@@ -34,7 +36,7 @@ export default function ProjectModal({ mode, onClose }: { mode: "self" | "assign
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   // People on an AI-only team log a name and a deadline: no client, no project type.
-  const simple = !(assigning ? team.find((m) => m.id === ownerId) : me)?.money;
+  const simple = !(assigning ? assignees.find((m) => m.id === ownerId) : me)?.money;
 
   const client = useMemo(() => clients.find((c) => c.id === clientId), [clients, clientId]);
   const active = ACTIVE_STAGES.includes(stage);
@@ -143,7 +145,7 @@ export default function ProjectModal({ mode, onClose }: { mode: "self" | "assign
               <label htmlFor="pm-owner">Owner</label>
               {assigning ? (
                 <select id="pm-owner" value={ownerId} onChange={(e) => setOwnerId(e.target.value)}>
-                  {team.map((m) => <option key={m.id} value={m.id}>{m.name}{m.id === me.id ? " (you)" : ""}</option>)}
+                  {assignees.map((m) => <option key={m.id} value={m.id}>{m.name}{m.id === me.id ? " (you)" : ""}</option>)}
                 </select>
               ) : (
                 <div className="ownerchip">
