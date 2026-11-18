@@ -27,6 +27,7 @@ export default function ProjectModal({ mode, onClose }: { mode: "self" | "assign
   const [internalCategory, setInternalCategory] = useState("");
   const [projectType, setProjectType] = useState(PROJECT_TYPES[0]);
   const [ownerId, setOwnerId] = useState(assigning ? others[0]?.id ?? me.id : me.id);
+  const [viaId, setViaId] = useState("");
   const [stage, setStage] = useState("Not started");
   const [nextStep, setNextStep] = useState("");
   const [deadline, setDeadline] = useState("");
@@ -37,6 +38,9 @@ export default function ProjectModal({ mode, onClose }: { mode: "self" | "assign
   const [busy, setBusy] = useState(false);
   // People on an AI-only team log a name and a deadline: no client, no project type.
   const simple = !(assigning ? assignees.find((m) => m.id === ownerId) : me)?.money;
+  // A manager can route an AI member's project through a Brand Solutions person.
+  const viaOptions = team.filter((m) => m.money && m.role === "EMPLOYEE");
+  const showVia = assigning && isManager && simple && viaOptions.length > 0;
 
   const client = useMemo(() => clients.find((c) => c.id === clientId), [clients, clientId]);
   const active = ACTIVE_STAGES.includes(stage);
@@ -59,6 +63,7 @@ export default function ProjectModal({ mode, onClose }: { mode: "self" | "assign
         internalCategory: workType === "INTERNAL" ? internalCategory : undefined,
         projectType,
         ownerId: assigning ? ownerId : me.id,
+        viaId: showVia && viaId ? viaId : undefined,
         stage,
         nextStep,
         deadline,
@@ -155,6 +160,16 @@ export default function ProjectModal({ mode, onClose }: { mode: "self" | "assign
                 </div>
               )}
             </div>
+
+            {showVia && (
+              <div className="ff">
+                <label htmlFor="pm-via">Assign via <span className="auto-note">· optional</span></label>
+                <select id="pm-via" value={viaId} onChange={(e) => setViaId(e.target.value)}>
+                  <option value="">Direct (no one in between)</option>
+                  {viaOptions.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
+                </select>
+              </div>
+            )}
 
             <div className="ff">
               <label htmlFor="pm-stage">Stage</label>

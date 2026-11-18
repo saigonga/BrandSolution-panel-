@@ -29,6 +29,17 @@ export const POST = handle(async (req: Request) => {
     ownerId = owner.id;
     ownerName = owner.name;
   }
+  // A manager can route an assignment to an AI member through a Brand Solutions person.
+  let viaName = "";
+  if (b.viaId && ownerId !== me.id) {
+    if (me.role !== "MANAGER") throw new HttpError(403, "Only a manager can assign via someone.");
+    const via = await prisma.user.findUnique({ where: { id: String(b.viaId) } });
+    const viaMember = via ? findMember(via.email) : undefined;
+    if (!via || !viaMember || !hasMoney(viaMember) || (ownerMember && hasMoney(ownerMember))) {
+      throw new HttpError(400, "Pick a Brand Solutions person to assign via.");
+    }
+    viaName = via.name;
+  }
   // The owner's own team sets the form rules: AI people log a name and a deadline only.
   const team = teamDef(ownerMember?.teams[0]);
   // Simple teams (AI) log only a name and a deadline: internal work, no client.
@@ -88,7 +99,7 @@ export const POST = handle(async (req: Request) => {
           type: "CREATE",
           authorId: me.id,
           toStage: stage,
-          body: ownerId !== me.id ? `Assigned to ${ownerName} by ${me.name}.` : "Project created.",
+          body: ownerId !== me.id ? `Assigned to ${ownerName} by ${me.name}${viaName ? ` via ${viaName}` : ""}.` : "Project created.",
         },
       },
     },

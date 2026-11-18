@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { ClientDTO, MemberDTO } from "@/lib/dto";
 import Rail from "@/components/Rail";
 import ProjectModal from "@/components/ProjectModal";
@@ -44,6 +45,21 @@ export default function AppShell({
   const [drawerId, setDrawerId] = useState<string | null>(null);
   const [modal, setModal] = useState<"self" | "assign" | null>(null);
   const mainRef = useRef<HTMLElement | null>(null);
+  const router = useRouter();
+
+  // Pick up other people's changes: refresh while the tab is visible, but never
+  // while a form or drawer is open, so nobody loses what they are typing.
+  const busy = !!modal || !!drawerId;
+  useEffect(() => {
+    if (busy) return;
+    const tick = () => document.visibilityState === "visible" && router.refresh();
+    const t = setInterval(tick, 30_000);
+    document.addEventListener("visibilitychange", tick);
+    return () => {
+      clearInterval(t);
+      document.removeEventListener("visibilitychange", tick);
+    };
+  }, [busy, router]);
 
   const setView = useCallback((v: ViewKey) => {
     setViewState(v);
