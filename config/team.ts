@@ -35,13 +35,6 @@ export const TEAM: TeamMember[] = [
     teams: ["BRAND_SOLUTIONS", "AI"],
   },
   {
-    email: "saigonga34@gmail.com",
-    name: "Owner",
-    title: "Owner",
-    role: "MANAGER",
-    teams: ["BRAND_SOLUTIONS", "AI"],
-  },
-  {
     email: "sai.gonga@theboredmonkey.com",
     name: "Sai Gonga",
     title: "Owner",
