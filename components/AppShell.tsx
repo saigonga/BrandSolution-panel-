@@ -2,7 +2,6 @@
 
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import type { ClientDTO, MemberDTO } from "@/lib/dto";
-import type { TeamDef } from "@/config/teams";
 import Rail from "@/components/Rail";
 import ProjectModal from "@/components/ProjectModal";
 import ProjectDrawer from "@/components/ProjectDrawer";
@@ -17,8 +16,6 @@ interface ShellCtx {
   me: Me;
   clients: ClientDTO[];
   team: MemberDTO[];
-  activeTeam: TeamDef;
-  teams: TeamDef[];
   isManager: boolean;
   view: ViewKey;
   setView: (v: ViewKey) => void;
@@ -35,13 +32,11 @@ export function useShell(): ShellCtx {
 }
 
 export default function AppShell({
-  me, clients, team, activeTeam, teams, views, children,
+  me, clients, team, views, children,
 }: {
   me: Me;
   clients: ClientDTO[];
   team: MemberDTO[];
-  activeTeam: TeamDef;
-  teams: TeamDef[];
   views?: Partial<Record<ViewKey, React.ReactNode>>;
   children?: React.ReactNode;
 }) {
@@ -58,8 +53,8 @@ export default function AppShell({
   const newProject = useCallback((mode: "self" | "assign") => setModal(mode), []);
 
   const value = useMemo<ShellCtx>(
-    () => ({ me, clients, team, activeTeam, teams, isManager: me.role === "MANAGER", view, setView, openProject, newProject }),
-    [me, clients, team, activeTeam, teams, view, setView, openProject, newProject]
+    () => ({ me, clients, team, isManager: me.role === "MANAGER", view, setView, openProject, newProject }),
+    [me, clients, team, view, setView, openProject, newProject]
   );
 
   return (

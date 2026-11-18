@@ -12,14 +12,12 @@ import Topbar from "@/components/Topbar";
 import ProjectCard from "@/components/ProjectCard";
 import NewProjectButton from "@/components/NewProjectButton";
 import Ledger from "@/components/Ledger";
-import { getActiveTeam } from "@/lib/team";
 
 export const dynamic = "force-dynamic";
 
 export default async function WorkspacePage() {
   const me = await getUser();
   if (!me) redirect("/signin");
-  const team = await getActiveTeam(me);
 
   const now = new Date();
   const today = dayKey(now);
@@ -27,7 +25,7 @@ export default async function WorkspacePage() {
 
   const [projectRows, filledMap, writable, backfillRows] = await Promise.all([
     prisma.project.findMany({
-      where: { ownerId: me.id, team: team.id, ...visibleProjectsWhere(now) },
+      where: { ownerId: me.id, ...visibleProjectsWhere(now) },
       include: projectInclude,
     }),
     loadFilledMap(habitWindowStart(now)),
@@ -71,11 +69,11 @@ export default async function WorkspacePage() {
           {isManager && (
             <div className="callout" style={{ marginBottom: 22 }}>
               <span className="ic" style={{ color: "var(--brand)" }}>●</span>
-              <div>You fill this too. Your projects{team.money ? " and closures" : ""} show on the team board{team.money ? " and count in the dashboard totals" : ""}, same as everyone else&apos;s.</div>
+              <div>You fill this too. Your projects{me.money ? " and closures" : ""} show on the team board{me.money ? " and count in the dashboard totals" : ""}, same as everyone else&apos;s.</div>
             </div>
           )}
 
-          {team.money && (<>
+          {me.money && (<>
           <div className="sec-h first">
             <h2>My day</h2>
             <span className="hint">Fill before the day locks at 11:30 PM</span>
@@ -104,7 +102,7 @@ export default async function WorkspacePage() {
           </div>
           </>)}
 
-          <div className={team.money ? "sec-h" : "sec-h first"}>
+          <div className={me.money ? "sec-h" : "sec-h first"}>
             <h2>My projects</h2>
             <span className="hint">{openCount} open</span>
             <span className="act"><NewProjectButton mode="self" /></span>
@@ -116,12 +114,12 @@ export default async function WorkspacePage() {
           ) : (
             <div className="empty">
               <b>No projects yet</b>
-              <span>{team.simple ? "Add each project you're working on with its deadline. One card each." : "Add every client project, pitch and internal piece you're working on. One card each."}</span>
+              <span>{!me.money ? "Add each project you're working on with its deadline. One card each." : "Add every client project, pitch and internal piece you're working on. One card each."}</span>
               <NewProjectButton mode="self" />
             </div>
           )}
 
-          {team.money && (
+          {me.money && (
             <Ledger
               entries={entries}
               totals={totals}

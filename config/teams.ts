@@ -20,12 +20,6 @@ export const TEAMS: TeamDef[] = [
   { id: "AI", label: "AI", money: false, simple: true },
 ];
 
-export const DEFAULT_TEAM: TeamId = "BRAND_SOLUTIONS";
-
 export function teamDef(id?: string | null): TeamDef {
   return TEAMS.find((t) => t.id === id) ?? TEAMS[0];
-}
-
-export function isTeamId(v: unknown): v is TeamId {
-  return typeof v === "string" && TEAMS.some((t) => t.id === v);
 }

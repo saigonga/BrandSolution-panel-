@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { handle, HttpError, readJson, requireTeamAccess, requireUser } from "@/lib/session";
-import { isTeamId, teamDef } from "@/config/teams";
+import { handle, HttpError, readJson, requireUser } from "@/lib/session";
+import { teamDef } from "@/config/teams";
 import { checkProjectType, checkStage, checkStageRules, dateKeyField, str } from "@/lib/validate";
 import { dayKey, dayStart, isLocked } from "@/lib/time";
 import { parseCats } from "@/lib/dto";
 import { projectInclude, toProjectDTO } from "@/lib/stats";
-import { findMember, teamsFor } from "@/config/team";
+import { findMember } from "@/config/team";
 
 export const POST = handle(async (req: Request) => {
   const me = await requireUser();
@@ -16,8 +16,20 @@ export const POST = handle(async (req: Request) => {
   const name = str(b.name, 140);
   if (!name) throw new HttpError(400, "Give the project a name.");
 
-  const team = teamDef(isTeamId(b.team) ? b.team : me.teams[0]);
-  requireTeamAccess(me, team.id);
+  // Managers can assign to anyone on either team; everyone else adds their own.
+  let ownerId = me.id;
+  let ownerName = me.name;
+  let ownerMember = findMember(me.email);
+  if (b.ownerId && b.ownerId !== me.id) {
+    if (me.role !== "MANAGER") throw new HttpError(403, "Only a manager can assign projects to someone else.");
+    const owner = await prisma.user.findUnique({ where: { id: String(b.ownerId) } });
+    ownerMember = owner ? findMember(owner.email) : undefined;
+    if (!owner || !ownerMember) throw new HttpError(400, "Pick someone from the team.");
+    ownerId = owner.id;
+    ownerName = owner.name;
+  }
+  // The owner's own team sets the form rules: AI people log a name and a deadline only.
+  const team = teamDef(ownerMember?.teams[0]);
   // Simple teams (AI) log only a name and a deadline: internal work, no client.
   const workType = team.simple || b.workType === "INTERNAL" ? "INTERNAL" : "CLIENT";
   const projectType = team.simple ? `${team.label} project` : checkProjectType(b.projectType);
@@ -49,19 +61,6 @@ export const POST = handle(async (req: Request) => {
   } else {
     internalCategory = team.simple ? team.label : str(b.internalCategory, 120);
     if (!internalCategory) throw new HttpError(400, "Add the category or label for this internal work.");
-  }
-
-  let ownerId = me.id;
-  let ownerName = me.name;
-  if (b.ownerId && b.ownerId !== me.id) {
-    if (me.role !== "MANAGER") throw new HttpError(403, "Only the manager can assign projects to someone else.");
-    const owner = await prisma.user.findUnique({ where: { id: String(b.ownerId) } });
-    const ownerMember = owner ? findMember(owner.email) : undefined;
-    if (!owner || !ownerMember || !teamsFor(ownerMember).includes(team.id)) {
-      throw new HttpError(400, "Pick someone from this team.");
-    }
-    ownerId = owner.id;
-    ownerName = owner.name;
   }
 
   if (!team.simple) checkStageRules({ stage, nextStep, reviewTo, reviewOn, parkedReason });

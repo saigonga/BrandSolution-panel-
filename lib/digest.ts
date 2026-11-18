@@ -39,7 +39,7 @@ function shell(title: string, sub: string, body: string): string {
   return `<!doctype html><html><body style="margin:0;background:${C.bg};font-family:Inter,Segoe UI,Arial,sans-serif">
   <table width="100%" cellpadding="0" cellspacing="0" bgcolor="${C.bg}" style="background:${C.bg}"><tr><td align="center" style="padding:28px 14px">
   <table width="640" cellpadding="0" cellspacing="0" style="max-width:640px;width:100%">
-    <tr><td style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:${C.gold};font-weight:700">TBM · Brand Solutions</td></tr>
+    <tr><td style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:${C.gold};font-weight:700">TBM · AI X BS</td></tr>
     <tr><td style="font-size:22px;font-weight:800;color:${C.ink};padding-top:4px">${esc(title)}</td></tr>
     <tr><td style="font-size:13px;color:${C.ink2};padding-top:2px">${esc(sub)}</td></tr>
     ${body}
@@ -130,7 +130,7 @@ export async function buildDaily(now: Date = new Date()) {
   body += section("Needs your attention", para(flags.length ? flags.join("<br>") : "Nothing flagged.", C.ink));
 
   return {
-    subject: `Brand Solutions daily · ${fmtLong(dayDate)}`,
+    subject: `AI X BS daily · ${fmtLong(dayDate)}`,
     html: shell("Daily summary", fmtLong(dayDate), body),
   };
 }
@@ -226,7 +226,7 @@ export async function buildWeekly(now: Date = new Date()) {
 
   const range = `${fmtShort(dayStart(from))} – ${fmtShort(dayStart(addDays(today, -1)))}`;
   return {
-    subject: `Brand Solutions weekly · ${range}`,
+    subject: `AI X BS weekly · ${range}`,
     html: shell("Weekly summary", range, body),
   };
 }

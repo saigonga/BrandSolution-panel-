@@ -28,11 +28,11 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
           <span className="mk" />
           <div>
             <b>TBM</b>
-            <span>Team panel</span>
+            <span>AI X BS</span>
           </div>
         </div>
         <div>
-          <h1>TBM Panel</h1>
+          <h1>AI X BS Panel</h1>
           <p style={{ marginTop: 6 }}>Your work in one place. Sign in with your work Google account.</p>
         </div>
         {err && <div className="formerr">{err}</div>}

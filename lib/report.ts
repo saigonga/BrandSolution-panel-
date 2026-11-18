@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { TEAM, findMember, teamOrder, teamsFor } from "@/config/team";
-import { TEAMS, type TeamId } from "@/config/teams";
+import { TEAMS, teamDef, type TeamId } from "@/config/teams";
 import { addDays, dayKey, dayStart, isWorkingDay, monthStartKey } from "@/lib/time";
 import { STAGES } from "@/lib/constants";
 import {
@@ -16,7 +16,7 @@ export async function getTeam(teamId?: TeamId): Promise<MemberDTO[]> {
     .map((u) => ({ u, m: findMember(u.email) }))
     .filter((x) => !!x.m && (!teamId || teamsFor(x.m).includes(teamId)))
     .sort((a, b) => teamOrder(a.u.email) - teamOrder(b.u.email))
-    .map(({ u, m }) => ({ id: u.id, name: m!.name, title: m!.title, role: m!.role, image: u.image, joinedKey: dayKey(u.createdAt) }));
+    .map(({ u, m }) => ({ id: u.id, name: m!.name, title: m!.title, role: m!.role, image: u.image, money: teamsFor(m!).some((t) => teamDef(t).money), joinedKey: dayKey(u.createdAt) }));
 }
 
 export async function totalsByOwner(fromKey: string, toKeyExclusive: string) {

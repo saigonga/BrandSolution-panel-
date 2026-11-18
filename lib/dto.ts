@@ -14,6 +14,7 @@ export interface MemberDTO {
   title: string;
   role: "MANAGER" | "EMPLOYEE";
   image: string | null;
+  money: boolean; // on a team that tracks closures and fill rate
   joinedKey: string; // IST day they joined the panel; fill rate counts from here
 }
 

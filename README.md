@@ -1,6 +1,7 @@
-# Brand Solutions Panel
+# AI X BS Panel
 
-Daily project and revenue tracker for the TBM Brand Solutions team.
+One daily project tracker for the TBM AI and Brand Solutions teams. Everyone sees one team board.
+Money (closures, ledger, clients) is only for people on a money team; AI people log projects and deadlines only.
 Next.js 16 · NextAuth (Google) · Prisma · SQLite locally, Postgres when hosted.
 
 ## Run it locally
@@ -23,8 +24,10 @@ Next.js 16 · NextAuth (Google) · Prisma · SQLite locally, Postgres when hoste
 ## Access
 
 `config/team.ts` is the access list. Only those Google accounts can sign in.
-- MANAGER (Pratik): everything, including the manager dashboard, assigning projects, approving backfills, all money.
-- EMPLOYEE: own workspace and own money, team board, client directory.
+- MANAGER (Pratik, Sai): everything, including the manager dashboard, assigning projects to anyone on either team, approving backfills, all money.
+- EMPLOYEE: own workspace, team board. Brand Solutions people also get their own money and the client directory. Employees add their own projects only.
+
+Each person lists their teams (`teams`) in `config/team.ts`; teams are defined in `config/teams.ts`.
 
 New joiner: add a line to `config/team.ts`, then `npm run db:seed`.
 

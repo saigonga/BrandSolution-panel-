@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { handle, HttpError, requireTeamAccess, requireUser } from "@/lib/session";
+import { handle, HttpError, requireUser } from "@/lib/session";
 import { projectInclude, toProjectDTO, toUpdateDTO } from "@/lib/stats";
 import { isLocked } from "@/lib/time";
 
-// Everyone on the same team can read any project and its history.
+// Everyone on the team can read any project and its history.
 // Only the owner or the manager can post to it.
 export const GET = handle(async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const me = await requireUser();
@@ -19,7 +19,6 @@ export const GET = handle(async (_req: Request, ctx: { params: Promise<{ id: str
     },
   });
   if (!p) throw new HttpError(404, "That project no longer exists.");
-  requireTeamAccess(me, p.team);
 
   return NextResponse.json({
     project: toProjectDTO(p),

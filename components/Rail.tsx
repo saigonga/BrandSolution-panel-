@@ -1,10 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useShell, type ViewKey } from "@/components/AppShell";
 import Avatar from "@/components/Avatar";
-import { TEAM_COOKIE } from "@/lib/team-cookie";
 
 interface NavItem { key: ViewKey; label: string; sub: string; managerOnly?: boolean; moneyOnly?: boolean }
 
@@ -21,14 +19,7 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
 ];
 
 export default function Rail() {
-  const { me, isManager, view, setView, activeTeam, teams } = useShell();
-  const router = useRouter();
-
-  function switchTeam(id: string) {
-    document.cookie = `${TEAM_COOKIE}=${id}; path=/; max-age=31536000; samesite=lax`;
-    setView("workspace");
-    router.refresh();
-  }
+  const { me, isManager, view, setView } = useShell();
 
   return (
     <nav className="rail" aria-label="Main">
@@ -36,25 +27,12 @@ export default function Rail() {
         <span className="mk" />
         <div>
           <b>TBM</b>
-          <span>{activeTeam.label}</span>
+          <span>AI X BS</span>
         </div>
       </div>
 
-      {teams.length > 1 && (
-        <div style={{ padding: "0 14px 10px" }}>
-          <select
-            aria-label="Switch team"
-            value={activeTeam.id}
-            onChange={(e) => switchTeam(e.target.value)}
-            style={{ width: "100%" }}
-          >
-            {teams.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
-          </select>
-        </div>
-      )}
-
       {GROUPS.map((g) => {
-        const items = g.items.filter((i) => (!i.managerOnly || isManager) && (!i.moneyOnly || activeTeam.money));
+        const items = g.items.filter((i) => (!i.managerOnly || isManager) && (!i.moneyOnly || me.money));
         if (!items.length) return null;
         return (
           <div key={g.title} style={{ display: "contents" }}>

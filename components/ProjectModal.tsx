@@ -10,8 +10,7 @@ import { ACTIVE_STAGES, PROJECT_TYPES, STAGES } from "@/lib/constants";
 import { api, todayKeyIST } from "@/lib/api";
 
 export default function ProjectModal({ mode, onClose }: { mode: "self" | "assign"; onClose: () => void }) {
-  const { me, clients, team, isManager, activeTeam } = useShell();
-  const simple = activeTeam.simple;
+  const { me, clients, team, isManager } = useShell();
   const router = useRouter();
   useEscape(onClose);
 
@@ -34,6 +33,8 @@ export default function ProjectModal({ mode, onClose }: { mode: "self" | "assign
   const [parkedReason, setParkedReason] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // People on an AI-only team log a name and a deadline: no client, no project type.
+  const simple = !(assigning ? team.find((m) => m.id === ownerId) : me)?.money;
 
   const client = useMemo(() => clients.find((c) => c.id === clientId), [clients, clientId]);
   const active = ACTIVE_STAGES.includes(stage);
@@ -50,7 +51,6 @@ export default function ProjectModal({ mode, onClose }: { mode: "self" | "assign
     try {
       await api("/api/projects", "POST", {
         name,
-        team: activeTeam.id,
         workType,
         clientId: workType === "CLIENT" ? clientId : undefined,
         productCategory: workType === "CLIENT" ? productCategory : undefined,
